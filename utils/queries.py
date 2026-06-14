@@ -14,7 +14,7 @@ def get_kpi_summary(filters: dict = None) -> dict:
             SUM(is_workfail)                                AS work_fail,
             ROUND(AVG(durasi_hari), 2)                      AS avg_durasi,
             SUM(is_unsc)                                    AS unsc,
-            COUNT(DISTINCT nama_teknisi)                    AS jumlah_teknisi,
+            COUNT(DISTINCT nik_teknisi)                     AS jumlah_teknisi,
             COUNT(DISTINCT sto)                             AS jumlah_sto
         FROM workorders
         {where}
@@ -123,7 +123,8 @@ def get_wo_per_sto(filters: dict = None) -> list:
 def get_teknisi_performance(filters: dict = None) -> list:
     where, params = _build_where(filters)
     return run_query(f"""
-        SELECT nama_teknisi,
+        SELECT nik_teknisi,
+               TRIM(SUBSTRING_INDEX(nik_teknisi, ' - ', -1)) AS nama_teknisi,
                COUNT(*) AS total_wo,
                SUM(is_sla_tercapai) AS sla_ok,
                ROUND(SUM(is_sla_tercapai) * 100.0 / COUNT(*), 2) AS pct_sla,
@@ -131,11 +132,11 @@ def get_teknisi_performance(filters: dict = None) -> list:
                SUM(is_workfail) AS work_fail,
                mitra
         FROM workorders
-        WHERE nama_teknisi IS NOT NULL AND nama_teknisi != ''
-        {(' AND ' + where[7:]) if where else ''}
-        GROUP BY nama_teknisi, mitra
+        WHERE nik_teknisi IS NOT NULL AND nik_teknisi != ''
+        {(' AND ' + where[6:]) if where else ''}
+        GROUP BY nik_teknisi, mitra
         ORDER BY total_wo DESC
-        LIMIT 30
+        LIMIT 50
     """, params)
 
 
@@ -148,7 +149,7 @@ def get_kendala_top(filters: dict = None, top_n: int = 10) -> list:
                COUNT(*) AS jumlah
         FROM workorders
         WHERE kendala_pt1 IS NOT NULL AND kendala_pt1 != ''
-        {(' AND ' + where[7:]) if where else ''}
+        {(' AND ' + where[6:]) if where else ''}
         GROUP BY kendala_pt1
         ORDER BY jumlah DESC
         LIMIT {top_n}
@@ -162,7 +163,7 @@ def get_kendala_kategori(filters: dict = None) -> list:
                COUNT(*) AS jumlah
         FROM workorders
         WHERE kategori_roc IS NOT NULL AND kategori_roc != ''
-        {(' AND ' + where[7:]) if where else ''}
+        {(' AND ' + where[6:]) if where else ''}
         GROUP BY kategori_roc
         ORDER BY jumlah DESC
         LIMIT 20
@@ -188,7 +189,7 @@ def get_infrastruktur_stats(filters: dict = None) -> list:
         UNION ALL
         SELECT
             'Distribusi' AS infra, COUNT(CASE WHEN distribusi IS NOT NULL AND distribusi != '' THEN 1 END) FROM workorders {where}
-    """, {**params, **params, **params, **params, **params})
+    """, params)
 
 
 # ── Durasi ────────────────────────────────────────────────────────────────────
@@ -199,7 +200,7 @@ def get_durasi_distribution(filters: dict = None) -> list:
         SELECT durasi_hari, sto, nama_teknisi, status_wo, is_sla_tercapai
         FROM workorders
         WHERE durasi_hari IS NOT NULL AND durasi_hari >= 0
-        {(' AND ' + where[7:]) if where else ''}
+        {(' AND ' + where[6:]) if where else ''}
         LIMIT 5000
     """, params)
 
@@ -212,7 +213,7 @@ def get_durasi_grup(filters: dict = None) -> list:
                ROUND(AVG(durasi_hari), 2) AS avg_durasi
         FROM workorders
         WHERE durasi_grup IS NOT NULL AND durasi_grup != ''
-        {(' AND ' + where[7:]) if where else ''}
+        {(' AND ' + where[6:]) if where else ''}
         GROUP BY durasi_grup
         ORDER BY jumlah DESC
     """, params)
@@ -251,7 +252,12 @@ def get_filter_options() -> dict:
     months = run_query("SELECT DISTINCT bulan, nama_bulan FROM workorders WHERE bulan IS NOT NULL ORDER BY bulan")
     stos = run_query("SELECT DISTINCT sto FROM workorders WHERE sto IS NOT NULL ORDER BY sto")
     statuses = run_query("SELECT DISTINCT status_wo FROM workorders WHERE status_wo IS NOT NULL ORDER BY status_wo")
-    teknisi = run_query("SELECT DISTINCT nama_teknisi FROM workorders WHERE nama_teknisi IS NOT NULL ORDER BY nama_teknisi")
+    teknisi = run_query("""
+        SELECT DISTINCT TRIM(SUBSTRING_INDEX(nik_teknisi, ' - ', -1)) AS nama_teknisi
+        FROM workorders
+        WHERE nik_teknisi IS NOT NULL AND nik_teknisi != ''
+        ORDER BY nama_teknisi
+    """)
     segment = run_query("SELECT DISTINCT segment FROM workorders WHERE segment IS NOT NULL ORDER BY segment")
     return {
         "years": [r["tahun"] for r in years],

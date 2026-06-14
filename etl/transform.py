@@ -137,10 +137,10 @@ def transform(df: pd.DataFrame, source_file: str = "") -> pd.DataFrame:
     # ── 10. Parse wo_id dari kolom wo/sc id ────────────────────────────────────
     if "wo_id" in df.columns:
         # wo_id bisa berupa "WO024928973" atau combined "WO... / SC..."
-        df["wo_id"] = df["wo_id"].astype(str).apply(_parse_wo_id)
+        raw_wo_id = df["wo_id"].astype(str)
+        df["wo_id"] = raw_wo_id.apply(_parse_wo_id)
         if "sc_id" not in df.columns:
-            # Coba ekstrak SC ID dari kolom yang sama
-            pass
+            df["sc_id"] = raw_wo_id.apply(_parse_sc_id)
 
     # ── 11. Koordinat ──────────────────────────────────────────────────────────
     if "koordinat_lat" in df.columns:
@@ -249,6 +249,23 @@ def _parse_wo_id(val) -> str | None:
             if wo_part:
                 return wo_part
     return val if val else None
+
+
+def _parse_sc_id(val) -> str | None:
+    if val is None or str(val) in ("nan", "None"):
+        return None
+    val = str(val).strip()
+    separators = [" / ", "/", "|", " "]
+    for sep in separators:
+        if sep in val and val.upper().startswith("WO"):
+            parts = [p.strip() for p in val.split(sep) if p.strip()]
+            for part in parts:
+                if part.upper().startswith("SC"):
+                    return part
+            # If there are exactly two parts and second part is not WO, treat second as SC
+            if len(parts) == 2 and not parts[1].upper().startswith("WO"):
+                return parts[1]
+    return None
 
 
 def _parse_koordinat(val) -> tuple:

@@ -142,3 +142,31 @@ CREATE TABLE IF NOT EXISTS etl_logs (
     duration_seconds DECIMAL(10,2),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLE: jobs_batches (job/batch tracking)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS jobs_batches (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    uuid VARCHAR(255) NOT NULL,
+    name VARCHAR(255) DEFAULT NULL,
+    payload LONGTEXT,
+    queue VARCHAR(255) DEFAULT NULL,
+    attempts INT DEFAULT 0,
+    failed_at TIMESTAMP NULL DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY jobs_batches_uuid_unique (uuid)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- ============================================================
+-- TABLE: obs (generic key/value store placeholder)
+-- ============================================================
+CREATE TABLE IF NOT EXISTS obs (
+    id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+    `key` VARCHAR(255) DEFAULT NULL,
+    `value` LONGTEXT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    UNIQUE KEY obs_key_unique (`key`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;

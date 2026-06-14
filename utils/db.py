@@ -64,6 +64,7 @@ def _migrate_etl_logs():
         "skipped_records":  "INT DEFAULT 0",
         "failed_records":   "INT DEFAULT 0",
         "error_message":    "TEXT DEFAULT NULL",
+        "started_at":       "TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
         "finished_at":      "DATETIME DEFAULT NULL",
         "duration_seconds": "INT DEFAULT NULL",
     }
