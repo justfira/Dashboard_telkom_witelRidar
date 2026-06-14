@@ -43,69 +43,46 @@ db_ok, db_err = init_db()
 with st.sidebar:
     st.markdown("""
     <div style="text-align:center; padding: 20px 0 10px 0;">
-        <div style="font-size: 2.2rem; margin-bottom: 6px;">📡</div>
-        <div style="font-size: 1rem; font-weight: 800; color: #2C1810;
-            letter-spacing: 1.5px;">TELKOM RIDAR</div>
-        <div style="font-size: 0.68rem; color: #9B7B75; margin-top: 4px;
-            font-weight: 500; letter-spacing: 0.5px;">BI MONITORING DASHBOARD</div>
-        <div style="height: 2px; background: linear-gradient(90deg, transparent, #D24F3C, transparent);
-            margin: 14px 0;"></div>
+        <div style="font-size: 2.5rem; margin-bottom: 8px;">📡</div>
+        <div style="font-size: 1.1rem; font-weight: 800; color: #2C1810; letter-spacing: 1.5px;">TELKOM RIDAR</div>
+        <div style="font-size: 0.7rem; color: #9B7B75; margin-top: 4px; font-weight: 600; letter-spacing: 1px;">BI MONITORING</div>
+        <div style="height: 2px; background: #F5C8BC; margin: 16px 0;"></div>
     </div>
     """, unsafe_allow_html=True)
 
-    # DB Status
     if db_ok:
-        st.markdown(
-            '<div style="text-align:center;">'
-            '<span class="kpi-badge-green">🟢 Database Connected</span>'
-            '</div>',
-            unsafe_allow_html=True
-        )
+        st.markdown('<div style="text-align:center; padding: 10px; background: #E8F5E8; border-radius: 8px; color: #2E7D4F; font-size: 0.8rem; font-weight: 600;">🟢 Database Connected</div>', unsafe_allow_html=True)
     else:
         st.error(f"❌ DB Error: {db_err}")
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
 # ── Landing Page ───────────────────────────────────────────────────────────────
 st.markdown("""
-<div class="page-header" style="text-align: center;">
-    <div style="font-size: 3rem; margin-bottom: 10px;">📡</div>
-    <h1 style="font-size: 2rem; font-weight: 800; margin: 0; color: #2C1810;">
-        Dashboard BI Monitoring
-    </h1>
-    <p style="color: #9B7B75; font-size: 1rem; margin-top: 8px; font-weight: 500;">
-        Work Order & Service Connectivity · Telkom Ridar
-    </p>
+<div class="page-header" style="text-align: center; border: none; background: transparent; box-shadow: none;">
+    <div style="font-size: 3.5rem; margin-bottom: 10px;">📡</div>
+    <h1 style="font-size: 2.5rem; font-weight: 800; color: #2C1810;">Selamat Datang di BI Dashboard</h1>
+    <p style="color: #9B7B75; font-size: 1.1rem; margin-top: 10px;">Monitoring Work Order & Service Connectivity · Telkom Ridar</p>
 </div>
 """, unsafe_allow_html=True)
+
+st.markdown("<br><br>", unsafe_allow_html=True)
 
 col1, col2, col3 = st.columns(3)
 
+# Menggunakan class "custom-card" yang sudah kita definisikan di theme.py
 cards = [
-    ("📊", "Dashboard Utama",
-     "KPI ringkasan, total WO, SLA, Work Fail, rata-rata durasi"),
-    ("🔄", "Upload & ETL",
-     "Upload Excel/CSV, proses ETL otomatis, monitoring log"),
-    ("📈", "Analisis Lengkap",
-     "Trend, SLA, STO, Teknisi, Kendala, Infrastruktur, Durasi"),
+    ("📊", "Dashboard Utama", "Ringkasan KPI, SLA, Work Fail, dan Rata-rata durasi."),
+    ("🔄", "Upload & ETL", "Upload file Excel/CSV, proses ETL, dan log monitoring."),
+    ("📈", "Analisis Lengkap", "Trend, SLA, STO, Teknisi, Kendala, & Durasi."),
 ]
+
 for col, (icon, title, desc) in zip([col1, col2, col3], cards):
     col.markdown(f"""
-    <div class="custom-card" style="text-align: center;">
-        <div style="font-size: 2rem; margin-bottom: 10px;">{icon}</div>
-        <div style="font-weight: 700; font-size: 1rem; color: #2C1810;
-            margin-bottom: 8px;">{title}</div>
-        <div style="color: #9B7B75; font-size: 0.85rem; line-height: 1.5;">{desc}</div>
+    <div class="custom-card" style="height: 200px; display: flex; flex-direction: column; align-items: center; justify-content: center;">
+        <div style="font-size: 2.5rem; margin-bottom: 15px;">{icon}</div>
+        <div style="font-weight: 800; font-size: 1.1rem; color: #2C1810; margin-bottom: 10px;">{title}</div>
+        <div style="color: #4A2C20; font-size: 0.9rem; text-align: center; padding: 0 10px;">{desc}</div>
     </div>
     """, unsafe_allow_html=True)
-
-st.markdown("<br>", unsafe_allow_html=True)
-st.markdown("""
-<div style="text-align: center; color: #9B7B75; font-size: 0.88rem;">
-    👈 <strong style="color: #D24F3C;">Gunakan menu di sidebar</strong>
-    untuk navigasi antar halaman
-</div>
-""", unsafe_allow_html=True)
 
 # ── Quick Stats ────────────────────────────────────────────────────────────────
 if db_ok:
@@ -113,20 +90,16 @@ if db_ok:
         from utils.queries import get_kpi_summary
         kpi = get_kpi_summary()
         if kpi and kpi.get("total_wo"):
-            st.markdown("---")
-            st.markdown(
-                '<p class="section-header">📊 Ringkasan Cepat</p>',
-                unsafe_allow_html=True
-            )
+            st.markdown("<br><br><br>", unsafe_allow_html=True)
+            st.markdown('<p class="section-header">📊 Ringkasan Data Saat Ini</p>', unsafe_allow_html=True)
+            
+            # Menggunakan component metric bawaan Streamlit agar lebih rapi
             c1, c2, c3, c4, c5 = st.columns(5)
-            total_wo = int(kpi.get("total_wo", 0) or 0)
-            wo_selesai = int(kpi.get("wo_selesai", 0) or 0)
-            sla_pct = (kpi.get("sla_tercapai", 0) or 0) / max(total_wo, 1) * 100
-            wf_pct  = (kpi.get("work_fail", 0) or 0) / max(total_wo, 1) * 100
-            c1.metric("📋 Total WO", f"{total_wo:,}")
-            c2.metric("✅ WO Selesai", f"{wo_selesai:,}")
-            c3.metric("🎯 SLA Tercapai", f"{sla_pct:.1f}%")
-            c4.metric("❌ Work Fail", f"{wf_pct:.1f}%")
-            c5.metric("⏱️ Avg Durasi", f"{kpi.get('avg_durasi', 0) or 0:.1f} Hari")
+            total = int(kpi.get("total_wo", 0) or 0)
+            c1.metric("Total WO", f"{total:,}")
+            c2.metric("WO Selesai", f"{int(kpi.get('wo_selesai', 0) or 0):,}")
+            c3.metric("SLA Tercapai", f"{((kpi.get('sla_tercapai', 0) or 0) / max(total, 1) * 100):.1f}%")
+            c4.metric("Work Fail", f"{((kpi.get('work_fail', 0) or 0) / max(total, 1) * 100):.1f}%")
+            c5.metric("Avg Durasi", f"{kpi.get('avg_durasi', 0) or 0:.1f} Hari")
     except Exception:
         pass
